@@ -1,0 +1,413 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SaaS向けサポートチャットボット | 永井駿</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --primary: #1e3a5f;
+        --primary-light: #2c4a7a;
+        --secondary: #3d7dd8;
+        --accent: #4a90ff;
+        --bg: #f0f4fc;
+        --card: #ffffff;
+        --text: #0f1f33;
+        --muted: #4a5d7a;
+        --border: #d4dce8;
+      }
+
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+
+      body {
+        font-family: "Noto Sans JP", ui-sans-serif, system-ui, sans-serif;
+        background: var(--bg); color: var(--text); line-height: 1.78;
+      }
+
+      nav {
+        background: #ffffff; backdrop-filter: blur(12px);
+        box-shadow: 0 4px 24px rgba(30,58,95,0.08);
+        padding: 16px 24px; display: flex; align-items: center; gap: 12px;
+        position: sticky; top: 0; z-index: 100;
+      }
+      nav a { text-decoration: none; color: var(--muted); font-size: 14px; transition: color 0.2s; white-space: nowrap; }
+      nav a:hover { color: var(--accent); }
+      nav .sep { color: var(--border); flex-shrink: 0; }
+      nav .current { color: var(--primary); font-weight: 600; font-size: 14px; }
+
+      .container { max-width: 800px; margin: 0 auto; padding: 56px 24px 96px; }
+
+      /* ヘッダー */
+      .page-header { margin-bottom: 48px; }
+      .tag {
+        display: inline-block; font-size: 12px; font-weight: 600;
+        letter-spacing: 0.1em; color: var(--secondary);
+        background: rgba(61,125,216,0.12); padding: 8px 14px;
+        border-radius: 999px; margin-bottom: 16px;
+      }
+      .page-header h1 { font-size: clamp(22px, 4vw, 30px); font-weight: 700; margin-bottom: 10px; line-height: 1.4; }
+      .page-header .subtitle { font-size: 16px; color: var(--secondary); font-weight: 600; margin-bottom: 20px; }
+      .page-header .lead {
+        font-size: 15px; color: var(--muted); line-height: 1.9;
+        padding: 24px 26px;
+        background: var(--card); border: 1px solid var(--border);
+        border-left: 5px solid var(--secondary); border-radius: 16px;
+        box-shadow: 0 4px 24px rgba(30,58,95,0.08);
+      }
+
+      /* セクション */
+      .section { margin-bottom: 48px; }
+      .section-title {
+        font-size: 20px; font-weight: 700; color: var(--primary);
+        margin-bottom: 20px; padding-left: 16px; border-left: 4px solid var(--secondary);
+      }
+      .section p { font-size: 15px; line-height: 1.9; color: var(--text); margin-bottom: 12px; }
+      .section p:last-child { margin-bottom: 0; }
+
+      /* 課題リスト */
+      .issue-list { list-style: none; display: grid; gap: 10px; }
+      .issue-list li {
+        background: var(--card); border: 1px solid var(--border);
+        border-radius: 14px; padding: 16px 18px 16px 46px;
+        font-size: 15px; position: relative;
+        box-shadow: 0 4px 24px rgba(30,58,95,0.08);
+      }
+      .issue-list li::before {
+        content: "？";
+        position: absolute; left: 14px; top: 14px;
+        font-size: 14px; font-weight: 700; color: var(--secondary);
+      }
+
+      /* 機能ブロック */
+      .feature-grid { display: grid; gap: 16px; }
+      .feature-block {
+        background: var(--card); border: 1px solid var(--border);
+        border-radius: 16px; padding: 26px 26px 22px;
+        box-shadow: 0 4px 24px rgba(30,58,95,0.08);
+        transition: box-shadow 0.25s, transform 0.25s;
+      }
+      .feature-block:hover { box-shadow: 0 12px 36px rgba(61,125,216,0.15); transform: translateY(-4px); }
+      .feature-block h3 {
+        font-size: 15px; font-weight: 700; color: var(--primary);
+        margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
+      }
+      .feature-block h3 .num {
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 24px; height: 24px; border-radius: 50%;
+        background: var(--primary); color: white;
+        font-size: 12px; font-weight: 700; flex-shrink: 0;
+      }
+      .feature-block p { font-size: 14px; color: var(--muted); line-height: 1.75; }
+      .feature-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+      .feature-tag {
+        background: rgba(44,62,122,0.06); color: var(--text);
+        font-size: 13px; padding: 5px 12px; border-radius: 8px;
+        border: 1px solid rgba(44,62,122,0.12);
+      }
+
+      /* 利用イメージ */
+      .bubble-list { display: grid; gap: 10px; }
+      .bubble {
+        background: var(--card); border: 1px solid var(--border);
+        border-radius: 14px; padding: 16px 18px;
+        font-size: 14px; color: var(--text);
+        display: flex; align-items: flex-start; gap: 10px;
+        box-shadow: 0 4px 24px rgba(30,58,95,0.08);
+      }
+      .bubble::before { content: "💬"; font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+      /* メリット */
+      .merit-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 16px;
+      }
+      .merit-card {
+        background: var(--card); border: 1px solid var(--border);
+        border-radius: 16px; padding: 26px 22px;
+        box-shadow: 0 4px 24px rgba(30,58,95,0.08);
+        border-top: 4px solid var(--secondary);
+        transition: box-shadow 0.25s, transform 0.25s;
+      }
+      .merit-card:hover { box-shadow: 0 12px 36px rgba(61,125,216,0.18); transform: translateY(-4px); }
+      .merit-card h3 { font-size: 14px; font-weight: 700; color: var(--primary); margin-bottom: 8px; }
+      .merit-card p { font-size: 13px; color: var(--muted); line-height: 1.75; }
+
+      /* 対応範囲 */
+      .scope-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+      .scope-box {
+        background: var(--card); border: 1px solid var(--border);
+        border-radius: 14px; padding: 22px;
+        box-shadow: 0 4px 24px rgba(30,58,95,0.08);
+      }
+      .scope-box.ok { border-top: 3px solid #22c55e; }
+      .scope-box.ng { border-top: 3px solid #f59e0b; }
+      .scope-box h3 { font-size: 13px; font-weight: 700; letter-spacing: 0.06em; margin-bottom: 12px; }
+      .scope-box.ok h3 { color: #16a34a; }
+      .scope-box.ng h3 { color: #d97706; }
+      .scope-list { list-style: none; display: grid; gap: 8px; }
+      .scope-list li { font-size: 13px; color: var(--text); padding-left: 18px; position: relative; }
+      .scope-list li::before { position: absolute; left: 0; }
+      .scope-box.ok .scope-list li::before { content: "✓"; color: #22c55e; font-weight: 700; }
+      .scope-box.ng .scope-list li::before { content: "×"; color: #f59e0b; font-weight: 700; }
+
+      /* デモ */
+      .demo-wrapper {
+        background: var(--card); border: 1px solid var(--border);
+        border-radius: 16px; overflow: hidden;
+        box-shadow: 0 4px 20px rgba(44,62,122,0.1);
+      }
+      .demo-bar {
+        background: var(--primary); padding: 12px 18px;
+        display: flex; align-items: center; gap: 10px;
+      }
+      .demo-bar .dot { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,0.3); }
+      .demo-bar .demo-label { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.9); margin-left: 4px; }
+      .demo-wrapper iframe { width: 100%; height: 600px; border: none; display: block; }
+      .demo-desc { font-size: 14px; color: var(--muted); margin-bottom: 20px; line-height: 1.8; }
+
+      /* ツール */
+      .tool-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+      .chip {
+        background: rgba(44,62,122,0.07); color: var(--primary);
+        font-size: 13px; font-weight: 500;
+        padding: 7px 16px; border-radius: 8px;
+        border: 1px solid rgba(44,62,122,0.18);
+      }
+
+      /* まとめ */
+      .summary-box {
+        background: linear-gradient(135deg, rgba(30,58,95,0.08), rgba(61,125,216,0.08));
+        border: 1px solid rgba(44,62,122,0.15);
+        border-radius: 16px; padding: 28px;
+        font-size: 15px; line-height: 1.9; color: var(--text);
+      }
+      .summary-box strong { color: var(--primary); }
+
+      .back-btn {
+        display: inline-block; margin-top: 48px;
+        background: var(--primary); color: white; text-decoration: none;
+        border-radius: 999px; padding: 13px 30px;
+        font-size: 14px; font-weight: 600; transition: background 0.2s;
+      }
+      .back-btn:hover { background: var(--accent); }
+
+      .to-top {
+        position: fixed; right: 24px; bottom: 24px;
+        padding: 12px 20px; font-size: 13px; font-weight: 600;
+        color: var(--secondary); background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        text-decoration: none;
+        box-shadow: 0 4px 20px rgba(30,58,95,0.12);
+        transition: color 0.2s, background 0.2s, transform 0.2s;
+        z-index: 50;
+      }
+      .to-top:hover {
+        color: white; background: var(--secondary);
+        transform: translateY(-2px);
+      }
+
+      @media (max-width: 600px) {
+        .scope-grid { grid-template-columns: 1fr; }
+        .container { padding: 40px 16px 72px; }
+      }
+    </style>
+  </head>
+  <body>
+
+    <nav>
+      <a href="../index.html">ポートフォリオ</a>
+      <span class="sep">›</span>
+      <a href="../index.html#works">Works</a>
+      <span class="sep">›</span>
+      <span class="current">SaaS向けサポートチャットボット</span>
+    </nav>
+
+    <div class="container">
+
+      <!-- ヘッダー -->
+      <div class="page-header">
+        <span class="tag">SaaS向け</span>
+        <h1>SaaS向けサポートチャットボット</h1>
+        <p class="subtitle">問い合わせ前の自己解決を増やし、サポート対応を効率化する案内ボット</p>
+        <p class="lead">
+          SaaSサービスを利用するユーザー向けに、よくある質問や初期設定、操作方法、トラブル時の確認ポイントなどを案内するチャットボットです。<br>
+          ユーザーが必要な情報へ素早くたどり着けるようにし、サポート対応の標準化と工数削減につなげることを目的としています。
+        </p>
+      </div>
+
+      <!-- 想定している課題 -->
+      <div class="section">
+        <h2 class="section-title">想定している課題</h2>
+        <p>SaaSでは、ユーザーサポートにおいて以下のような課題が起こりやすいです。</p>
+        <ul class="issue-list" style="margin: 16px 0;">
+          <li>同じような問い合わせが繰り返し来る</li>
+          <li>初期設定や基本操作の質問が多い</li>
+          <li>FAQやヘルプページがあっても探しにくい</li>
+          <li>軽微な不具合確認に工数がかかる</li>
+          <li>担当者ごとに回答のばらつきが出る</li>
+          <li>本当に人が対応すべき問い合わせに時間を使いにくい</li>
+        </ul>
+        <p>チャットボットが最初の案内役となることで、ユーザーの自己解決率を高め、必要に応じて適切なサポート導線へつなぐ設計を行います。</p>
+      </div>
+
+      <!-- できること -->
+      <div class="section">
+        <h2 class="section-title">このチャットボットでできること</h2>
+        <div class="feature-grid">
+
+          <div class="feature-block">
+            <h3><span class="num">1</span>よくある質問への回答</h3>
+            <div class="feature-tags">
+              <span class="feature-tag">料金プラン</span>
+              <span class="feature-tag">契約・請求</span>
+              <span class="feature-tag">ログイン方法</span>
+              <span class="feature-tag">アカウント設定</span>
+              <span class="feature-tag">権限管理</span>
+              <span class="feature-tag">基本機能の使い方</span>
+            </div>
+          </div>
+
+          <div class="feature-block">
+            <h3><span class="num">2</span>初期設定・操作案内</h3>
+            <div class="feature-tags">
+              <span class="feature-tag">初回ログイン後の設定手順</span>
+              <span class="feature-tag">よく使う機能の使い方</span>
+              <span class="feature-tag">管理画面の見方</span>
+              <span class="feature-tag">チーム・通知設定</span>
+            </div>
+          </div>
+
+          <div class="feature-block">
+            <h3><span class="num">3</span>トラブルシューティングの一次切り分け</h3>
+            <p>以下のような内容について、順番に確認項目を案内し、自己解決につなげます。</p>
+            <div class="feature-tags" style="margin-top:12px;">
+              <span class="feature-tag">ログインできない</span>
+              <span class="feature-tag">メールが届かない</span>
+              <span class="feature-tag">表示が崩れる</span>
+              <span class="feature-tag">権限エラーが出る</span>
+              <span class="feature-tag">設定が反映されない</span>
+            </div>
+          </div>
+
+          <div class="feature-block">
+            <h3><span class="num">4</span>適切な窓口への誘導</h3>
+            <div class="feature-tags">
+              <span class="feature-tag">ヘルプページ</span>
+              <span class="feature-tag">マニュアル</span>
+              <span class="feature-tag">お問い合わせフォーム</span>
+              <span class="feature-tag">サポート担当への連絡</span>
+              <span class="feature-tag">障害情報ページ</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- 利用イメージ -->
+      <div class="section">
+        <h2 class="section-title">利用イメージ</h2>
+        <p style="margin-bottom:16px;">ユーザーがサービス画面やヘルプページ上で質問すると、チャットボットが内容に応じて案内します。たとえば、</p>
+        <div class="bubble-list">
+          <div class="bubble">「ログインできません」</div>
+          <div class="bubble">「通知メールが届かないです」</div>
+          <div class="bubble">「メンバー追加の方法を知りたい」</div>
+          <div class="bubble">「請求書はどこで確認できますか？」</div>
+          <div class="bubble">「権限設定はどうやりますか？」</div>
+        </div>
+        <p style="margin-top:16px;">こうした質問に対して、想定FAQや確認フローに沿って案内し、必要に応じてヘルプ記事や問い合わせ窓口へつなぎます。</p>
+      </div>
+
+      <!-- 導入メリット -->
+      <div class="section">
+        <h2 class="section-title">導入メリット</h2>
+        <div class="merit-grid">
+          <div class="merit-card">
+            <h3>自己解決率の向上</h3>
+            <p>ユーザーが問い合わせ前に必要な情報へたどり着けるようになります。</p>
+          </div>
+          <div class="merit-card">
+            <h3>サポート工数の削減</h3>
+            <p>定型的な問い合わせを減らし、担当者がより重要な対応に集中しやすくなります。</p>
+          </div>
+          <div class="merit-card">
+            <h3>回答品質の標準化</h3>
+            <p>担当者ごとの差を減らし、案内内容を一定に保ちやすくなります。</p>
+          </div>
+          <div class="merit-card">
+            <h3>顧客体験の向上</h3>
+            <p>「すぐ聞ける・すぐわかる」環境がユーザー満足度にもつながります。</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 対応範囲・注意点 -->
+      <div class="section">
+        <h2 class="section-title">対応範囲・注意点</h2>
+        <p style="margin-bottom:16px;">このチャットボットは、一次案内と切り分けを行うことを目的としています。</p>
+        <div class="scope-grid">
+          <div class="scope-box ok">
+            <h3>対応する内容</h3>
+            <ul class="scope-list">
+              <li>FAQ案内</li>
+              <li>基本操作説明</li>
+              <li>一般的な設定手順</li>
+              <li>よくある不具合の確認フロー</li>
+              <li>サポート導線への案内</li>
+            </ul>
+          </div>
+          <div class="scope-box ng">
+            <h3>対応しない内容</h3>
+            <ul class="scope-list">
+              <li>個別環境の詳細な技術調査</li>
+              <li>アカウント固有の機密確認</li>
+              <li>複雑な障害解析</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- 使用ツール -->
+      <div class="section">
+        <h2 class="section-title">使用ツール</h2>
+        <div class="tool-chips">
+          <span class="chip">Dify</span>
+          <span class="chip">ChatGPT</span>
+          <span class="chip">Notion</span>
+        </div>
+      </div>
+
+      <!-- デモ -->
+      <div class="section">
+        <h2 class="section-title">デモを試す</h2>
+        <p class="demo-desc">実際にチャットボットを体験できます。質問を入力してみてください。</p>
+        <div class="demo-wrapper">
+          <div class="demo-bar">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <span class="demo-label">SaaS向けサポートチャットボット — デモ</span>
+          </div>
+          <iframe src="https://udify.app/chat/8d9UPlRc1wdMcvda" allow="microphone" loading="lazy"></iframe>
+        </div>
+      </div>
+
+      <!-- まとめ -->
+      <div class="section">
+        <h2 class="section-title">まとめ</h2>
+        <div class="summary-box">
+          SaaS向けサポートチャットボットは、<strong>ユーザーの自己解決率を高める</strong>ことと、<strong>サポート担当の対応工数を削減する</strong>ことを両立するための仕組みです。<br><br>
+          一次案内・切り分け・適切な導線へのつなぎを設計することで、ユーザーにとっても、運営側にとっても<strong>無駄の少ないサポート体験</strong>を実現することを目指しています。
+        </div>
+      </div>
+
+      <a href="../index.html#works" class="back-btn">← Worksに戻る</a>
+
+      <a href="../index.html" class="to-top" aria-label="サイトトップへ">サイトトップへ</a>
+    </div>
+  </body>
+</html>
