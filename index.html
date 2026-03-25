@@ -394,28 +394,69 @@
       .scroll-reveal-bottom.is-visible { transform: translateY(0); opacity: 1; }
       .scroll-reveal-fade.is-visible { transform: scale(1); opacity: 1; }
 
+      /* ハンバーガーメニュー */
+      .nav-toggle {
+        display: none;
+        background: none; border: none; cursor: pointer;
+        padding: 6px; color: var(--primary);
+      }
+      .nav-toggle svg { display: block; }
+
       @media (max-width: 900px) {
         .strengths-grid { grid-template-columns: repeat(2, 1fr); }
       }
       @media (max-width: 640px) {
-        nav ul { gap: 12px; }
+        /* ナビ */
+        nav { padding: 14px 20px; }
+        .nav-toggle { display: block; }
+        nav ul {
+          display: none;
+          position: absolute; top: 100%; left: 0; right: 0;
+          background: #fff;
+          flex-direction: column; gap: 0;
+          box-shadow: 0 8px 24px rgba(30,58,95,0.12);
+          z-index: 99;
+        }
+        nav ul.open { display: flex; }
+        nav ul li a {
+          display: block; padding: 14px 24px;
+          font-size: 15px; border-bottom: 1px solid var(--border);
+        }
+
         section { padding: 56px 16px; }
         .about-grid { grid-template-columns: 1fr; }
         .strengths-grid { grid-template-columns: 1fr; }
-        .values-block { padding: 28px 24px; }
+        .values-block { padding: 28px 20px; }
         .values-block p { font-size: 15px; }
         .work-detail-row { grid-template-columns: 1fr; gap: 2px; }
         .hero { min-height: 85vh; padding: 60px 20px 80px; gap: 22px; }
+        .hero-line2 { white-space: normal; }
         .profile-header { flex-direction: column; gap: 16px; margin-bottom: 20px; padding-bottom: 20px; }
         .profile-header img { width: 140px; height: 140px; }
+
+        /* 進め方フロー */
+        .flow-steps {
+          flex-direction: column; align-items: center;
+          gap: 4px;
+        }
+        .flow-steps .arrow {
+          transform: rotate(90deg);
+          animation: none;
+        }
+        .flow-steps .step { min-width: 160px; width: 100%; max-width: 260px; }
       }
     </style>
   </head>
   <body>
 
-    <nav>
+    <nav id="main-nav">
       <span class="logo">Nagai Shun</span>
-      <ul>
+      <button class="nav-toggle" id="nav-toggle" aria-label="メニュー">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+          <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+      <ul id="nav-menu">
         <li><a href="#services">対応業務</a></li>
         <li><a href="#strengths">強み</a></li>
         <li><a href="#profile">プロフィール</a></li>
@@ -718,6 +759,16 @@
       document.getElementById("to-top").addEventListener("click", function(e) {
         e.preventDefault();
         window.scrollTo({ top: 0, behavior: "smooth" });
+      });
+
+      // ハンバーガーメニュー
+      var navToggle = document.getElementById("nav-toggle");
+      var navMenu = document.getElementById("nav-menu");
+      navToggle.addEventListener("click", function() {
+        navMenu.classList.toggle("open");
+      });
+      navMenu.querySelectorAll("a").forEach(function(a) {
+        a.addEventListener("click", function() { navMenu.classList.remove("open"); });
       });
       (function() {
         var birth = new Date(1990, 0, 29);
